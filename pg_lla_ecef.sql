@@ -36,6 +36,21 @@ CREATE OR REPLACE FUNCTION KM_Point3D(double precision, double precision, double
     AS 'point3d', 'point3d_make'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION KM_X(Point3D)
+    RETURNS double precision
+    AS 'point3d', 'point3d_x'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION KM_Y(Point3D)
+    RETURNS double precision
+    AS 'point3d', 'point3d_y'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION KM_Z(Point3D)
+    RETURNS double precision
+    AS 'point3d', 'point3d_z'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OR REPLACE FUNCTION KM_ToECEF(geometry(Point,4326), double precision)
     RETURNS Point3D
     AS 'pg_lla_ecef', 'KM_ToECEF'

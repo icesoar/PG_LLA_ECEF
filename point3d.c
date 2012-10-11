@@ -87,3 +87,33 @@ point3d_make(PG_FUNCTION_ARGS)
     result->z = z;
     PG_RETURN_POINTER(result);
 }
+
+PG_FUNCTION_INFO_V1(point3d_x);
+
+Datum
+point3d_x(PG_FUNCTION_ARGS)
+{
+    Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
+
+    PG_RETURN_FLOAT8(point3d->x);
+}
+
+PG_FUNCTION_INFO_V1(point3d_y);
+
+Datum
+point3d_y(PG_FUNCTION_ARGS)
+{
+    Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
+
+    PG_RETURN_FLOAT8(point3d->y);
+}
+
+PG_FUNCTION_INFO_V1(point3d_z);
+
+Datum
+point3d_z(PG_FUNCTION_ARGS)
+{
+    Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
+
+    PG_RETURN_FLOAT8(point3d->z);
+}
