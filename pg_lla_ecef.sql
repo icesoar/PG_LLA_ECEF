@@ -51,6 +51,16 @@ CREATE OR REPLACE FUNCTION KM_Z(Point3D)
     AS 'point3d', 'point3d_z'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION KM_Add(Point3D, Point3D)
+    RETURNS Point3D
+    AS 'point3d', 'point3d_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION KM_Negate(Point3D)
+    RETURNS Point3D
+    AS 'point3d', 'point3d_negate'
+    LANGUAGE C IMMUTABLE STRICT;
+
 ------------------------------------------------------------------------------------------
 
 DROP TYPE Rotation3D CASCADE;
