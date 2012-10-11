@@ -110,3 +110,7 @@ CREATE OR REPLACE FUNCTION KM_ToLLA(Point3d)
     AS 'pg_lla_ecef', 'KM_ToLLA'
     LANGUAGE C STRICT;
 
+CREATE OR REPLACE FUNCTION KM_Rotate(Rotation3D, Point3D, boolean)
+    RETURNS Point3D
+    AS 'pg_lla_ecef', 'KM_Rotate'
+    LANGUAGE C STRICT;

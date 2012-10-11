@@ -314,3 +314,36 @@ KM_ToENU (PG_FUNCTION_ARGS)
 
     return PointerGetDatum(rotation);
 }
+
+PG_FUNCTION_INFO_V1(KM_Rotate);
+
+Datum
+KM_Rotate (PG_FUNCTION_ARGS)
+{
+    Rotation3D * rotation3d = (Rotation3D*)PG_GETARG_POINTER(0);
+    Point3D * point3d = (Point3D*)PG_GETARG_POINTER(1);
+    bool inverse = PG_GETARG_BOOL(2);
+
+    Point3D * result = (Point3D*)palloc(sizeof(Point3D));
+
+    if (!result)
+    {
+        ereport(ERROR, (errmsg_internal("Out of virtual memory")));
+        return NULL;
+    }
+
+    if (inverse)
+    {
+        result->x = rotation3d->r11*point3d->x + rotation3d->r21*point3d->y + rotation3d->r31*point3d->z;
+        result->y = rotation3d->r12*point3d->x + rotation3d->r22*point3d->y + rotation3d->r32*point3d->z;
+        result->z = rotation3d->r13*point3d->x + rotation3d->r23*point3d->y + rotation3d->r33*point3d->z;
+    }
+    else
+    {
+        result->x = rotation3d->r11*point3d->x + rotation3d->r12*point3d->y + rotation3d->r13*point3d->z;
+        result->y = rotation3d->r21*point3d->x + rotation3d->r22*point3d->y + rotation3d->r23*point3d->z;
+        result->z = rotation3d->r31*point3d->x + rotation3d->r32*point3d->y + rotation3d->r33*point3d->z;
+    }
+
+    return PointerGetDatum(result);
+}
