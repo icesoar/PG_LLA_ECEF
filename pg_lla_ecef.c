@@ -14,6 +14,14 @@ const double wgs84asq = WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS;
 const double wgs84bsq = WGS84_MINOR_AXIS*WGS84_MINOR_AXIS;
 const double wgs84eccsq = (WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS - WGS84_MINOR_AXIS*WGS84_MINOR_AXIS)/(WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS);
 
+#ifndef _GNU_SOURCE
+inline void sincos(double theta, double *_sin, double *_cos)
+{
+    *_sin = sin(theta);
+    *_cos = cos(theta);
+}
+#endif
+
 void radcur (double lat, double rrnrm[3])
 {
     double ecc, clat, slat;
@@ -21,8 +29,7 @@ void radcur (double lat, double rrnrm[3])
 
     ecc = sqrt(wgs84eccsq);
 
-    clat = cos(lat);
-    slat = sin(lat);
+    sincos(lat, &slat, &clat);
 
     dsq = 1.0 - wgs84eccsq * slat * slat;
     d = sqrt(dsq);
@@ -120,10 +127,8 @@ KM_ToECEF (PG_FUNCTION_ARGS)
     flat = dtr*p.y;
     flon = dtr*p.x;
 
-    clat = cos(flat);
-    slat = sin(flat);
-    clon = cos(flon);
-    slon = sin(flon);
+    sincos(flat, &slat, &clat);
+    sincos(flon, &slon, &clon);
 
     radcur(flat, rrnrm);
     rn = rrnrm[1];
@@ -281,10 +286,8 @@ KM_ToENU (PG_FUNCTION_ARGS)
     flat = dtr*p.y;
     flon = dtr*p.x;
 
-    clat = cos(flat);
-    slat = sin(flat);
-    clon = cos(flon);
-    slon = sin(flon);
+    sincos(flat, &slat, &clat);
+    sincos(flon, &slon, &clon);
 
     Rotation3D * rotation = (Rotation3D*)palloc(sizeof(Rotation3D));
 
