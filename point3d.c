@@ -69,3 +69,21 @@ point3d_send(PG_FUNCTION_ARGS)
     pq_sendfloat8(&buf, point3d->z);
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
+
+PG_FUNCTION_INFO_V1(point3d_make);
+
+Datum
+point3d_make(PG_FUNCTION_ARGS)
+{
+    float8 x = PG_GETARG_FLOAT8(0);
+    float8 y = PG_GETARG_FLOAT8(1);
+    float8 z = PG_GETARG_FLOAT8(2);
+
+    Point3D * result;
+
+    result = (Point3D*) palloc(sizeof(Point3D));
+    result->x = x;
+    result->y = y;
+    result->z = z;
+    PG_RETURN_POINTER(result);
+}

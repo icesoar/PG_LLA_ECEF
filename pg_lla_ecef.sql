@@ -31,6 +31,11 @@ CREATE TYPE Point3D (
     alignment = double
 );
 
+CREATE OR REPLACE FUNCTION KM_Point3D(double precision, double precision, double precision)
+    RETURNS Point3D
+    AS 'point3d', 'point3d_make'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OR REPLACE FUNCTION KM_ToECEF(geometry(Point,4326), double precision)
     RETURNS Point3D
     AS 'pg_lla_ecef', 'KM_ToECEF'
