@@ -95,12 +95,10 @@ CREATE OR REPLACE FUNCTION KM_Rotation3D(double precision, double precision, dou
 
 ------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION KM_Point3D(double precision, double precision, double precision)
-    RETURNS Point3D
-    AS 'point3d', 'point3d_make'
-    LANGUAGE C IMMUTABLE STRICT;
-
-
+CREATE OR REPLACE FUNCTION KM_ToENU(geometry(Point,4326))
+    RETURNS Rotation3D
+    AS 'pg_lla_ecef', 'KM_ToENU'
+    LANGUAGE C STRICT;
 
 CREATE OR REPLACE FUNCTION KM_ToECEF(geometry(Point,4326), double precision)
     RETURNS Point3D

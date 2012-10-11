@@ -3,6 +3,7 @@
 #include "fmgr.h"
 
 #include "point3d.h"
+#include "rotation3d.h"
 
 #include <math.h>
 
@@ -250,4 +251,66 @@ KM_ToLLA (PG_FUNCTION_ARGS)
     lwgeom_free(lwpoint);
 
     PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(KM_ToENU);
+
+Datum
+KM_ToENU (PG_FUNCTION_ARGS)
+{
+    GSERIALIZED *geom;
+    LWPOINT *lwpoint;
+    int32_t srid;
+    POINT2D p;
+    double flat, flon;
+    double clat, slat, clon, slon;
+
+    geom = (GSERIALIZED*)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(0));
+    srid = gserialized_get_srid(geom);
+
+    if (srid != 4326)
+    {
+        PG_FREE_IF_COPY(geom, 0);
+        elog(ERROR, "Input geometry has SRID %d.  4326 required.", srid);
+        PG_RETURN_NULL();
+    }
+
+    if (gserialized_get_type(geom) != POINTTYPE)
+    {
+        PG_FREE_IF_COPY(geom, 0);
+        elog(ERROR, "Input geometry must be a point.");
+        PG_RETURN_NULL();
+    }
+
+    lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom));
+
+    lwpoint_getPoint2d_p(lwpoint, &p);
+
+    flat = dtr*p.y;
+    flon = dtr*p.x;
+
+    clat = cos(flat);
+    slat = sin(flat);
+    clon = cos(flon);
+    slon = sin(flon);
+
+    Rotation3D * rotation = (Rotation3D*)palloc(sizeof(Rotation3D));
+
+    if (!rotation)
+    {
+        ereport(ERROR, (errmsg_internal("Out of virtual memory")));
+        return NULL;
+    }
+
+    rotation->r11 = -slon;
+    rotation->r12 = -clon*slat;
+    rotation->r13 = clat*clon;
+    rotation->r21 = clon;
+    rotation->r22 = -slon*slat;
+    rotation->r23 = slon*clat;
+    rotation->r31 = 0;
+    rotation->r32 = clat;
+    rotation->r33 = slat;
+
+    return PointerGetDatum(rotation);
 }

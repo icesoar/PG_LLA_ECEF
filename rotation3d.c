@@ -45,7 +45,7 @@ rotation3d_out(PG_FUNCTION_ARGS)
     snprintf(result, 100, "Rotation3D (%g %g %g %g %g %g %g %g %g)", 
         rotation3d->r11, rotation3d->r12, rotation3d->r13,
         rotation3d->r21, rotation3d->r22, rotation3d->r23,
-        rotation3d->r31, rotation3d->r22, rotation3d->r33);
+        rotation3d->r31, rotation3d->r32, rotation3d->r33);
     PG_RETURN_CSTRING(result);
 }
 
