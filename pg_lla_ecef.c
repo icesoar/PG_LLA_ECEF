@@ -9,22 +9,16 @@
 
 PG_MODULE_MAGIC;
 
-#define FP_NAN sqrt(-1)
-
 const double dtr = M_PI/180.0;
-const double wgs84eccsq = 1.0 - WGS84_MINOR_AXIS*WGS84_MINOR_AXIS/(WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS);
+const double wgs84asq = WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS;
+const double wgs84bsq = WGS84_MINOR_AXIS*WGS84_MINOR_AXIS;
+const double wgs84eccsq = (WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS - WGS84_MINOR_AXIS*WGS84_MINOR_AXIS)/(WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS);
 
 void radcur (double lat, double rrnrm[3])
 {
-    double a = FP_NAN, b = FP_NAN;
-    double asq = FP_NAN, bsq = FP_NAN, ecc = FP_NAN, clat = FP_NAN, slat = FP_NAN;
-    double dsq = FP_NAN, d = FP_NAN, rn = FP_NAN, rm = FP_NAN, rho = FP_NAN, rsq = FP_NAN, r = FP_NAN, z = FP_NAN;
+    double ecc, clat, slat;
+    double dsq, d, rn, rm, rho, rsq, r, z;
 
-    a = WGS84_MAJOR_AXIS;
-    b = WGS84_MINOR_AXIS;
-
-    asq = a*a;
-    bsq = b*b;
     ecc = sqrt(wgs84eccsq);
 
     clat = cos(lat);
@@ -33,7 +27,7 @@ void radcur (double lat, double rrnrm[3])
     dsq = 1.0 - wgs84eccsq * slat * slat;
     d = sqrt(dsq);
 
-    rn = a/d;
+    rn = WGS84_MAJOR_AXIS/d;
     rm = rn * (1.0 - wgs84eccsq)/dsq;
 
     rho = rn * clat;
@@ -48,11 +42,11 @@ void radcur (double lat, double rrnrm[3])
 
 double gc2gd (flatgc, alt)
 {
-    double flatgd = FP_NAN;
-    double rrnrm [3] = {FP_NAN};
-    double re = FP_NAN, rn = FP_NAN;
-    double slat = FP_NAN, clat = FP_NAN, tlat = FP_NAN;
-    double altnow = FP_NAN, ratio = FP_NAN;
+    double flatgd;
+    double rrnrm [3];
+    double re, rn;
+    double slat, clat, tlat;
+    double altnow, ratio;
 
     altnow = alt;
 
@@ -76,8 +70,8 @@ double gc2gd (flatgc, alt)
 
 double rearth(lat)
 {
-    double rrnrm[3] = {FP_NAN};
-    double r = FP_NAN;
+    double rrnrm[3];
+    double r;
 
     radcur(lat, rrnrm);
     r = rrnrm[0];
@@ -99,7 +93,7 @@ KM_ToECEF (PG_FUNCTION_ARGS)
     double flat, flon;
     double clat, clon, slat, slon;
     double rrnrm [3];
-    double rn, esq;
+    double rn;
     double re;
 
     geom = (GSERIALIZED*)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(0));
@@ -135,8 +129,6 @@ KM_ToECEF (PG_FUNCTION_ARGS)
     rn = rrnrm[1];
     re = rrnrm[0];
 
-    esq = wgs84eccsq;
-
     Point3D * ecef = (Point3D *)palloc(sizeof(Point3D));
 
     if (!ecef)
@@ -147,7 +139,7 @@ KM_ToECEF (PG_FUNCTION_ARGS)
 
     ecef->x = (rn + alt) * clat * clon;
     ecef->y = (rn + alt) * clat * slon;
-    ecef->z = ((1 - esq)*rn + alt) * slat;
+    ecef->z = ((1.0 - wgs84eccsq)*rn + alt) * slat;
 
     return PointerGetDatum(ecef);
 }
@@ -159,19 +151,19 @@ KM_ToLLA (PG_FUNCTION_ARGS)
 {
     Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
 
-    double flatgc = FP_NAN, flatn = FP_NAN, dlat = FP_NAN;
-    double rnow = FP_NAN, rp = FP_NAN;
-    double p = FP_NAN;
+    double flatgc, flatn, dlat;
+    double rnow, rp;
+    double p;
     int kount;
-    double tangc = FP_NAN, tangd = FP_NAN;
+    double tangc, tangd;
 
-    double testval = FP_NAN;
+    double testval;
     
-    double rn = FP_NAN;
-    double clat = FP_NAN, slat = FP_NAN;
-    double rrnrm [3] = {FP_NAN};
+    double rn;
+    double clat, slat;
+    double rrnrm [3];
 
-    double flat = FP_NAN, flon = FP_NAN, alt = FP_NAN;
+    double flat, flon, alt;
 
     LWGEOM * lwpoint = NULL;
     GSERIALIZED * result = NULL;
