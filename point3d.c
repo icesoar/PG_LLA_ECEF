@@ -166,3 +166,28 @@ point3d_negate(PG_FUNCTION_ARGS)
 
     PG_RETURN_POINTER(result);
 }
+
+PG_FUNCTION_INFO_V1(point3d_scale);
+
+Datum
+point3d_scale(PG_FUNCTION_ARGS)
+{
+    Point3D * in = (Point3D*)PG_GETARG_POINTER(0);
+    float8 scale = PG_GETARG_FLOAT8(1);
+
+    Point3D * result;
+
+    result = (Point3D*)palloc(sizeof(Point3D));
+
+    if (!result)
+    {
+        ereport(ERROR, (errmsg_internal("Out of virtual memory")));
+        return NULL;
+    }
+
+    result->x = scale*in->x;
+    result->y = scale*in->y;
+    result->z = scale*in->z;
+
+    PG_RETURN_POINTER(result);
+}

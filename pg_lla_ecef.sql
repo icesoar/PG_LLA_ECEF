@@ -56,6 +56,11 @@ CREATE OR REPLACE FUNCTION KM_Add(Point3D, Point3D)
     AS 'point3d', 'point3d_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION KM_Scale(Point3D, double precision)
+    RETURNS Point3D
+    AS 'point3d', 'point3d_scale'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OR REPLACE FUNCTION KM_Negate(Point3D)
     RETURNS Point3D
     AS 'point3d', 'point3d_negate'
