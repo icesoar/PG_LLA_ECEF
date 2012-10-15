@@ -108,6 +108,11 @@ CREATE OR REPLACE FUNCTION KM_Rotation3D(double precision, double precision, dou
     AS 'rotation3d', 'rotation3d_make'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION KM_Explode(Rotation3d)
+    RETURNS double precision []
+    AS 'rotation3d', 'rotation3d_explode'
+    LANGUAGE C IMMUTABLE STRICT;
+
 ------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION KM_ToENU(geometry(Point,4326))

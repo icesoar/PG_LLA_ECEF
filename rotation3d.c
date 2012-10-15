@@ -1,6 +1,8 @@
 #include "rotation3d.h"
 
 #include "postgres.h"
+#include "catalog/pg_type.h"
+#include "utils/array.h"
 #include "fmgr.h"
 #include "libpq/pqformat.h"
 
@@ -121,3 +123,36 @@ rotation3d_make(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(rotation3d_explode);
+
+Datum
+rotation3d_explode(PG_FUNCTION_ARGS)
+{
+    Rotation3D * rotation3d = (Rotation3D*)PG_GETARG_POINTER(0);
+
+    ArrayType * result;
+    Datum * result_data;
+
+    result_data = (Datum*)palloc(sizeof(float8)*9);
+
+    if (!result_data)
+    {
+        PG_RETURN_NULL();
+    }
+
+    result_data[0] = Float8GetDatum(rotation3d->r11);
+    result_data[1] = Float8GetDatum(rotation3d->r12);
+    result_data[2] = Float8GetDatum(rotation3d->r13);
+    result_data[3] = Float8GetDatum(rotation3d->r21);
+    result_data[4] = Float8GetDatum(rotation3d->r22);
+    result_data[5] = Float8GetDatum(rotation3d->r23);
+    result_data[6] = Float8GetDatum(rotation3d->r31);
+    result_data[7] = Float8GetDatum(rotation3d->r32);
+    result_data[8] = Float8GetDatum(rotation3d->r33);
+    
+    result = construct_array(result_data, 9, FLOAT8OID, sizeof(float8), true, 'd');
+
+    pfree(result_data);
+
+    PG_RETURN_ARRAYTYPE_P(result);
+}
