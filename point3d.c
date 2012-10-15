@@ -143,6 +143,37 @@ point3d_add(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(point3d_direction);
+
+Datum
+point3d_direction(PG_FUNCTION_ARGS)
+{
+    Point3D * a = (Point3D*)PG_GETARG_POINTER(0);
+    Point3D * b = (Point3D*)PG_GETARG_POINTER(1);
+
+    Point3D * result;
+    
+    result = (Point3D*)palloc(sizeof(Point3D));
+
+    if (!result)
+    {
+        ereport(ERROR, (errmsg_internal("Out of virtual memory")));
+        return NULL;
+    }
+
+    result->x = b->x - a->x;
+    result->y = b->y - a->y;
+    result->z = b->z - a->z;
+
+    float8 norm = sqrt(result->x*result->x + result->y*result->y + result->z*result->z);
+
+    result->x /= norm;
+    result->y /= norm;
+    result->z /= norm;
+
+    PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(point3d_negate);
 
 Datum
