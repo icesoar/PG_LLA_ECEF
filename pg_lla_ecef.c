@@ -47,7 +47,7 @@ void radcur (double lat, double rrnrm[3])
     rrnrm[2] = rm;
 }
 
-double gc2gd (flatgc, alt)
+double gc2gd (double flatgc, double alt)
 {
     double flatgd;
     double rrnrm [3];
@@ -75,7 +75,7 @@ double gc2gd (flatgc, alt)
     return flatgd;
 }
 
-double rearth(lat)
+double rearth(double lat)
 {
     double rrnrm[3];
     double r;
