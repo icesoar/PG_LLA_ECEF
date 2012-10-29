@@ -15,6 +15,7 @@ const double wgs84bsq = WGS84_MINOR_AXIS*WGS84_MINOR_AXIS;
 const double wgs84eccsq = (WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS - WGS84_MINOR_AXIS*WGS84_MINOR_AXIS)/(WGS84_MAJOR_AXIS*WGS84_MAJOR_AXIS);
 
 #ifndef _GNU_SOURCE
+inline void sincos(double theta, double *_sin, double *_cos);
 inline void sincos(double theta, double *_sin, double *_cos)
 {
     *_sin = sin(theta);
@@ -22,12 +23,18 @@ inline void sincos(double theta, double *_sin, double *_cos)
 }
 #endif
 
+void radcur (double lat, double rrnrm[3]);
+double gc2gd (double flatgc, double alt);
+double rearth(double lat);
+Datum KM_ToECEF (PG_FUNCTION_ARGS);
+Datum KM_ToLLA (PG_FUNCTION_ARGS);
+Datum KM_ToENU (PG_FUNCTION_ARGS);
+Datum KM_Rotate (PG_FUNCTION_ARGS);
+
 void radcur (double lat, double rrnrm[3])
 {
-    double ecc, clat, slat;
+    double clat, slat;
     double dsq, d, rn, rm, rho, rsq, r, z;
-
-    ecc = sqrt(wgs84eccsq);
 
     sincos(lat, &slat, &clat);
 
@@ -51,8 +58,8 @@ double gc2gd (double flatgc, double alt)
 {
     double flatgd;
     double rrnrm [3];
-    double re, rn;
-    double slat, clat, tlat;
+    double rn;
+    double tlat;
     double altnow, ratio;
 
     altnow = alt;
@@ -88,8 +95,7 @@ double rearth(double lat)
 
 PG_FUNCTION_INFO_V1(KM_ToECEF);
 
-Datum
-KM_ToECEF (PG_FUNCTION_ARGS)
+Datum KM_ToECEF (PG_FUNCTION_ARGS)
 {
     GSERIALIZED *geom;
     LWPOINT *lwpoint;
@@ -101,7 +107,8 @@ KM_ToECEF (PG_FUNCTION_ARGS)
     double clat, clon, slat, slon;
     double rrnrm [3];
     double rn;
-    double re;
+
+    Point3D * ecef;
 
     geom = (GSERIALIZED*)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(0));
     srid = gserialized_get_srid(geom);
@@ -132,14 +139,13 @@ KM_ToECEF (PG_FUNCTION_ARGS)
 
     radcur(flat, rrnrm);
     rn = rrnrm[1];
-    re = rrnrm[0];
 
-    Point3D * ecef = (Point3D *)palloc(sizeof(Point3D));
+    ecef = (Point3D *)palloc(sizeof(Point3D));
 
     if (!ecef)
     {
         ereport(ERROR, (errmsg_internal("Out of virtual memory")));
-        return NULL;
+        PG_RETURN_NULL();
     }
 
     ecef->x = (rn + alt) * clat * clon;
@@ -151,8 +157,7 @@ KM_ToECEF (PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(KM_ToLLA);
 
-Datum
-KM_ToLLA (PG_FUNCTION_ARGS)
+Datum KM_ToLLA (PG_FUNCTION_ARGS)
 {
     Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
 
@@ -160,7 +165,7 @@ KM_ToLLA (PG_FUNCTION_ARGS)
     double rnow, rp;
     double p;
     int kount;
-    double tangc, tangd;
+    double tangd;
 
     double testval;
     
@@ -172,6 +177,8 @@ KM_ToLLA (PG_FUNCTION_ARGS)
 
     LWGEOM * lwpoint = NULL;
     GSERIALIZED * result = NULL;
+
+    size_t ret_size;
 
     rp = sqrt(point3d->x*point3d->x + point3d->y*point3d->y + point3d->z*point3d->z);
 
@@ -204,7 +211,12 @@ KM_ToLLA (PG_FUNCTION_ARGS)
         if (lwgeom_is_empty(lwpoint))
             PG_RETURN_NULL();
 
-        result = geometry_serialize(lwpoint);
+    	ret_size = 0;
+	    result = gserialized_from_lwgeom(lwpoint, 0, &ret_size);
+    	if ( ! result ) 
+            lwerror("Unable to serialize lwgeom.");
+	    SET_VARSIZE(result, ret_size);
+
         lwgeom_free(lwpoint);
 
         PG_RETURN_POINTER(result);
@@ -244,7 +256,12 @@ KM_ToLLA (PG_FUNCTION_ARGS)
     if (lwgeom_is_empty(lwpoint))
         PG_RETURN_NULL();
 
-    result = geometry_serialize(lwpoint);
+    ret_size = 0;
+    result = gserialized_from_lwgeom(lwpoint, 0, &ret_size);
+    if ( ! result ) 
+        lwerror("Unable to serialize lwgeom.");
+    SET_VARSIZE(result, ret_size);
+
     lwgeom_free(lwpoint);
 
     PG_RETURN_POINTER(result);
@@ -252,8 +269,7 @@ KM_ToLLA (PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(KM_ToENU);
 
-Datum
-KM_ToENU (PG_FUNCTION_ARGS)
+Datum KM_ToENU (PG_FUNCTION_ARGS)
 {
     GSERIALIZED *geom;
     LWPOINT *lwpoint;
@@ -261,6 +277,7 @@ KM_ToENU (PG_FUNCTION_ARGS)
     POINT2D p;
     double flat, flon;
     double clat, slat, clon, slon;
+    Rotation3D * rotation;
 
     geom = (GSERIALIZED*)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(0));
     srid = gserialized_get_srid(geom);
@@ -289,12 +306,12 @@ KM_ToENU (PG_FUNCTION_ARGS)
     sincos(flat, &slat, &clat);
     sincos(flon, &slon, &clon);
 
-    Rotation3D * rotation = (Rotation3D*)palloc(sizeof(Rotation3D));
+    rotation = (Rotation3D*)palloc(sizeof(Rotation3D));
 
     if (!rotation)
     {
         ereport(ERROR, (errmsg_internal("Out of virtual memory")));
-        return NULL;
+        PG_RETURN_NULL();
     }
 
     rotation->r11 = -slon;
@@ -312,8 +329,7 @@ KM_ToENU (PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(KM_Rotate);
 
-Datum
-KM_Rotate (PG_FUNCTION_ARGS)
+Datum KM_Rotate (PG_FUNCTION_ARGS)
 {
     Rotation3D * rotation3d = (Rotation3D*)PG_GETARG_POINTER(0);
     Point3D * point3d = (Point3D*)PG_GETARG_POINTER(1);
@@ -324,7 +340,7 @@ KM_Rotate (PG_FUNCTION_ARGS)
     if (!result)
     {
         ereport(ERROR, (errmsg_internal("Out of virtual memory")));
-        return NULL;
+        PG_RETURN_NULL();
     }
 
     if (inverse)

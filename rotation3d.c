@@ -8,10 +8,16 @@
 
 PG_MODULE_MAGIC;
 
+Datum rotation3d_in(PG_FUNCTION_ARGS);
+Datum rotation3d_out(PG_FUNCTION_ARGS);
+Datum rotation3d_recv(PG_FUNCTION_ARGS);
+Datum rotation3d_send(PG_FUNCTION_ARGS);
+Datum rotation3d_make(PG_FUNCTION_ARGS);
+Datum rotation3d_explode(PG_FUNCTION_ARGS);
+
 PG_FUNCTION_INFO_V1(rotation3d_in);
 
-Datum
-rotation3d_in(PG_FUNCTION_ARGS)
+Datum rotation3d_in(PG_FUNCTION_ARGS)
 {
     char *str = PG_GETARG_CSTRING(0);
     double r11, r12, r13, r21, r22, r23, r31, r32, r33;
@@ -37,8 +43,7 @@ rotation3d_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(rotation3d_out);
 
-Datum
-rotation3d_out(PG_FUNCTION_ARGS)
+Datum rotation3d_out(PG_FUNCTION_ARGS)
 {
     Rotation3D * rotation3d = (Rotation3D*)PG_GETARG_POINTER(0);
     char * result;
@@ -53,8 +58,7 @@ rotation3d_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(rotation3d_recv);
 
-Datum
-rotation3d_recv(PG_FUNCTION_ARGS)
+Datum rotation3d_recv(PG_FUNCTION_ARGS)
 {
     StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
     Rotation3D * result;
@@ -74,8 +78,7 @@ rotation3d_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(rotation3d_send);
 
-Datum
-rotation3d_send(PG_FUNCTION_ARGS)
+Datum rotation3d_send(PG_FUNCTION_ARGS)
 {
     Rotation3D * rotation3d = (Rotation3D*)PG_GETARG_POINTER(0);
     StringInfoData buf;
@@ -95,8 +98,7 @@ rotation3d_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(rotation3d_make);
 
-Datum
-rotation3d_make(PG_FUNCTION_ARGS)
+Datum rotation3d_make(PG_FUNCTION_ARGS)
 {
     float8 r11 = PG_GETARG_FLOAT8(0);
     float8 r12 = PG_GETARG_FLOAT8(1);
@@ -125,8 +127,7 @@ rotation3d_make(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(rotation3d_explode);
 
-Datum
-rotation3d_explode(PG_FUNCTION_ARGS)
+Datum rotation3d_explode(PG_FUNCTION_ARGS)
 {
     Rotation3D * rotation3d = (Rotation3D*)PG_GETARG_POINTER(0);
 

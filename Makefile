@@ -8,7 +8,7 @@ include $(PGXS)
 all: pg_lla_ecef.so point3d.so rotation3d.so
 
 pg_lla_ecef.so: pg_lla_ecef.o
-	gcc -shared -o pg_lla_ecef.so pg_lla_ecef.o /hydra/S1/kmatzen/homebrew/Cellar/postgresql/9.1.4/lib/postgis-2.0.so
+	gcc -shared -o pg_lla_ecef.so pg_lla_ecef.o /usr/lib/postgresql/9.1/lib/postgis-2.0.so
 
 pg_lla_ecef.o:  pg_lla_ecef.c
 	gcc -o pg_lla_ecef.o -c pg_lla_ecef.c $(CFLAGS) -I$(INCLUDEDIR) -I/hydra/S1/kmatzen/homebrew/include
