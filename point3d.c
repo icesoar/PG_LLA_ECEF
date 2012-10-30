@@ -1,6 +1,8 @@
 #include "point3d.h"
 
 #include "postgres.h"
+#include "catalog/pg_type.h"
+#include "utils/array.h"
 #include "fmgr.h"
 #include "libpq/pqformat.h"
 
@@ -21,6 +23,7 @@ Datum point3d_subtract(PG_FUNCTION_ARGS);
 Datum point3d_direction(PG_FUNCTION_ARGS);
 Datum point3d_negate(PG_FUNCTION_ARGS);
 Datum point3d_scale(PG_FUNCTION_ARGS);
+Datum point3d_explode(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(point3d_in);
 
@@ -251,4 +254,31 @@ Datum point3d_scale(PG_FUNCTION_ARGS)
     result->z = scale*in->z;
 
     PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(point3d_explode);
+
+Datum point3d_explode(PG_FUNCTION_ARGS)
+{
+    Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
+
+    ArrayType * result;
+    Datum * result_data;
+
+    result_data = (Datum*)palloc(sizeof(float8)*3);
+
+    if (!result_data)
+    {
+        PG_RETURN_NULL();
+    }
+
+    result_data[0] = Float8GetDatum(point3d->x);
+    result_data[1] = Float8GetDatum(point3d->y);
+    result_data[2] = Float8GetDatum(point3d->z);
+    
+    result = construct_array(result_data, 3, FLOAT8OID, sizeof(float8), true, 'd');
+
+    pfree(result_data);
+
+    PG_RETURN_ARRAYTYPE_P(result);
 }

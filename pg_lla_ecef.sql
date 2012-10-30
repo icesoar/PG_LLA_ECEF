@@ -76,6 +76,11 @@ CREATE OR REPLACE FUNCTION KM_Direction(Point3D, Point3D)
     AS 'point3d', 'point3d_direction'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION KM_Explode(Point3d)
+    RETURNS double precision []
+    AS 'point3d', 'point3d_explode'
+    LANGUAGE C IMMUTABLE STRICT;
+
 ------------------------------------------------------------------------------------------
 
 DROP TYPE Rotation3D CASCADE;
