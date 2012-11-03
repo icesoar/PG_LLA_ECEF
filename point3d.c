@@ -24,6 +24,7 @@ Datum point3d_direction(PG_FUNCTION_ARGS);
 Datum point3d_negate(PG_FUNCTION_ARGS);
 Datum point3d_scale(PG_FUNCTION_ARGS);
 Datum point3d_explode(PG_FUNCTION_ARGS);
+Datum point3d_norm(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(point3d_in);
 
@@ -281,4 +282,15 @@ Datum point3d_explode(PG_FUNCTION_ARGS)
     pfree(result_data);
 
     PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(point3d_norm);
+
+Datum point3d_norm(PG_FUNCTION_ARGS)
+{
+    Point3D * point3d = (Point3D*)PG_GETARG_POINTER(0);
+
+    float8 norm = sqrt(point3d->x*point3d->x + point3d->y*point3d->y + point3d->z*point3d->z);
+
+    PG_RETURN_FLOAT8(norm);
 }
