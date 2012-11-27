@@ -140,7 +140,7 @@ CREATE OR REPLACE FUNCTION KM_ToENU(geometry(Point,4326))
     AS 'pg_lla_ecef', 'KM_ToENU'
     LANGUAGE C STRICT;
 
-CREATE OR REPLACE FUNCTION KM_ToECEF(geometry(Point,4326), double precision)
+CREATE OR REPLACE FUNCTION KM_ToECEF(geometry(Point,4326))
     RETURNS Point3D
     AS 'pg_lla_ecef', 'KM_ToECEF'
     LANGUAGE C STRICT;

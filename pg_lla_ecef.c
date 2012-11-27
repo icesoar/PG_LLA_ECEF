@@ -100,8 +100,7 @@ Datum KM_ToECEF (PG_FUNCTION_ARGS)
     GSERIALIZED *geom;
     LWPOINT *lwpoint;
     int32_t srid;
-    POINT2D p;
-    float8 alt = PG_GETARG_FLOAT8(1);
+    POINT3DZ p;
 
     double flat, flon;
     double clat, clon, slat, slon;
@@ -127,9 +126,16 @@ Datum KM_ToECEF (PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
     }
 
+    if (!gserialized_has_z(geom))
+    {
+        PG_FREE_IF_COPY(geom, 0);
+        elog(ERROR, "Input geometry must have z coordinate.");
+        PG_RETURN_NULL();
+    }
+
     lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom));
 
-    lwpoint_getPoint2d_p(lwpoint, &p);
+    lwpoint_getPoint3dz_p(lwpoint, &p);
 
     flat = dtr*p.y;
     flon = dtr*p.x;
@@ -148,9 +154,9 @@ Datum KM_ToECEF (PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
     }
 
-    ecef->x = (rn + alt) * clat * clon;
-    ecef->y = (rn + alt) * clat * slon;
-    ecef->z = ((1.0 - wgs84eccsq)*rn + alt) * slat;
+    ecef->x = (rn + p.z) * clat * clon;
+    ecef->y = (rn + p.z) * clat * slon;
+    ecef->z = ((1.0 - wgs84eccsq)*rn + p.z) * slat;
 
     return PointerGetDatum(ecef);
 }
