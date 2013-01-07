@@ -5,7 +5,13 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 INCLUDEDIR = $(shell $(PG_CONFIG) --includedir-server)
 include $(PGXS)
 
-all: pg_lla_ecef.so point3d.so rotation3d.so
+all: pg_lla_ecef.so point3d.so rotation3d.so libllaecef.so
+
+lla_ecef.o: lla_ecef.c lla_ecef.h
+	gcc -o lla_ecef.o -c lla_ecef.c -O3 -fPIC
+
+libllaecef.so:  lla_ecef.o
+	gcc -shared -o libllaecef.so lla_ecef.o
 
 pg_lla_ecef.so: pg_lla_ecef.o
 	gcc -shared -o pg_lla_ecef.so pg_lla_ecef.o /usr/lib/postgresql/9.1/lib/postgis-2.0.so
