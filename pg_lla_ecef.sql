@@ -86,9 +86,14 @@ CREATE OR REPLACE FUNCTION KM_Explode(Point3d)
     AS 'point3d', 'point3d_explode'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION KM_Norm(Point3d)
+CREATE OR REPLACE FUNCTION KM_Norm(Point3D)
     RETURNS double precision
     AS 'point3d', 'point3d_norm'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION KM_Dot(Point3D, Point3D)
+    RETURNS double precision
+    AS 'point3d', 'point3d_dot'
     LANGUAGE C IMMUTABLE STRICT;
 
 ------------------------------------------------------------------------------------------
